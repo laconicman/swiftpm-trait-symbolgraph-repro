@@ -110,6 +110,7 @@ run.sh                   regression harness
 
 ## Discussion
 
+- **SwiftPM issue: <https://github.com/swiftlang/swift-package-manager/issues/10448>**
 - Stack Overflow: <https://stackoverflow.com/questions/79997703/can-i-stop-swift-package-generate-documentation-from-downloading-a-trait-gated>
 
 ## Licence
