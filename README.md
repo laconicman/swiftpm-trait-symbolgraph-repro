@@ -58,17 +58,37 @@ plugin API or to dependency resolution in general.
 
 ## Root cause
 
-Both affected call sites hardcode `enableAllTraits: true` when loading the package graph:
+Both affected entry points pass `enableAllTraits: true` to
+`SwiftCommandState.createBuildSystem(...)` when loading the package graph. Verified on `main`
+(2026-08-23):
 
-- `Sources/CoreCommands/SwiftCommandState.swift` — the `dump-symbol-graph` path
-- `Sources/CoreCommands/PluginDelegate.swift` — `createSymbolGraphForPlugin`
+`Sources/Commands/PackageCommands/DumpCommands.swift:60-68` — `dump-symbol-graph`:
 
-That un-prunes the trait-gated dependency before
-`BinaryArtifactsManager.parseArtifacts(from:)` enumerates binary targets for download. The
-target is pruned again later, at build-plan time — after the bytes have already moved.
+```swift
+let buildSystem = try await swiftCommandState.createBuildSystem(
+    // We are enabling all traits for dumping the symbol graph.
+    enableAllTraits: true,
+    cacheBuildManifest: false
+)
+```
 
-Because the value is hardcoded rather than derived from user options,
-`--disable-default-traits` has no effect, which is why there is no workaround.
+`Sources/Commands/Utilities/PluginDelegate.swift:377-382` — `createSymbolGraphForPlugin`:
+
+```swift
+let buildSystem = try await swiftCommandState.createBuildSystem(
+    explicitBuildSystem: buildSystem,
+    enableAllTraits: true,
+    cacheBuildManifest: false
+)
+```
+
+That un-prunes the trait-gated dependency before binary artifacts are enumerated for download.
+The target is pruned again later, at build-plan time — after the bytes have already moved.
+
+Enabling all traits for symbol-graph extraction looks deliberate, and defensible: documentation
+should presumably cover trait-gated public API. The artifact download appears to be an unintended
+side effect of that choice, and there is no opt-out — because the value is hardcoded rather than
+derived from user options, `--disable-default-traits` has no effect.
 
 ## Why it is worth fixing
 
