@@ -1,5 +1,7 @@
 # Symbol-graph extraction ignores traits when downloading binary artifacts
 
+[![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/laconicman/swiftpm-trait-symbolgraph-repro)
+
 A minimal, offline reproduction of a SwiftPM issue: **`swift package dump-symbol-graph`
 downloads the binary artifact of a trait-gated dependency even when that trait is disabled.**
 `swift build` and `swift package resolve` correctly do not.
